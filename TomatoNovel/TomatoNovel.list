@@ -1,0 +1,22 @@
+# TomatoNovel QX filter v1.0 - 2026-10-27
+# Adapted from sve1r/Rules-For-Quantumult-X
+# Conservative mode: protect Douyin live streams and shared ByteDance services.
+# Subscribe as filter_remote with policy REJECT; do not combine with original TomatoNovel.list.
+#
+# Fanqie-specific logging / tracking
+host-wildcard,frontier*-toutiao-lf.fqnovel.com,reject
+host-wildcard,log*-applog-*.fqnovel.com,reject
+host-wildcard,mon*-misc-lf.fqnovel.com,reject
+host-wildcard,rtlog*-applog-*.fqnovel.com,reject
+#
+# Ad SDK infrastructure (potential overlap with main adblock list)
+host-suffix,api-access.pangolin-sdk-toutiao.com,reject
+host-wildcard,api-access.pangolin-sdk-toutiao*.com,reject
+host-wildcard,lf*-ad-union-sdk.pglstatp-toutiao.com,reject
+host-wildcard,p*-ad-sign.byteimg.com,reject
+host-wildcard,ads*-normal-*.zijieapi.com,reject
+#
+# Intentionally excluded:
+# pull-*.douyincdn.com and p*-webcast-sign.douyinpic.com: Douyin livestream
+# *.snssdk.com, broad *.zijieapi.com, *.bytegecko.com: cross-app impact
+# novelapp/reading/video CDNs and 6 unverified fixed IPs: content-breakage risk
