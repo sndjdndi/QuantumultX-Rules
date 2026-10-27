@@ -1,5 +1,5 @@
-# TomatoNovel QX filter v1.0 - 2026-10-27
-# Adapted from sve1r/Rules-For-Quantumult-X
+# TomatoNovel QX filter v1.1 - 2026-10-27
+# Adapted from sve1r/Rules-For-Quantumult-X and Kelee DragonRead plugin
 # Conservative mode: protect Douyin live streams and shared ByteDance services.
 # Subscribe as filter_remote with policy REJECT; do not combine with original TomatoNovel.list.
 #
@@ -9,6 +9,14 @@ host-wildcard,log*-applog-*.fqnovel.com,reject
 host-wildcard,mon*-misc-lf.fqnovel.com,reject
 host-wildcard,rtlog*-applog-*.fqnovel.com,reject
 #
+# Kelee DragonRead exact Fanqie endpoints (not matched by some above wildcards)
+host,log3-applog.fqnovel.com,reject
+host,log5-applog.fqnovel.com,reject
+host,mon11-misc-lq.fqnovel.com,reject
+host,mon11-misc.fqnovel.com,reject
+host,mon3-misc.fqnovel.com,reject
+host,rtlog3-applog.fqnovel.com,reject
+host,rtlog5-applog.fqnovel.com,reject
 # Ad SDK infrastructure (potential overlap with main adblock list)
 host-suffix,api-access.pangolin-sdk-toutiao.com,reject
 host-wildcard,api-access.pangolin-sdk-toutiao*.com,reject
