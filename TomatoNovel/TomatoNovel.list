@@ -1,10 +1,10 @@
-# TomatoNovel Quantumult X filter V2.0 - 2026-10-28
-# Sources: sve1r, Moli-X/Tool (KeLee), FMZ200. Manually audited.
-# Scope: Fanqie telemetry and identifiable ad infrastructure only.
-# No Douyin live CDN / webcast-sign / common snssdk / generic novel media CDN blocks.
-# Keep one general ad blocker (AWAvenue or AdRules), BlockHttpDNS, and Moyu splash.
-
-# Fanqie telemetry / diagnostics (KeLee exact hosts + sve1r patterns)
+# TomatoNovel Quantumult X filter V2.1 SAFE - 2026-10-29
+# Emergency compatibility revision: user reported later chapters fail to load.
+# Keep ONLY exact Fanqie telemetry endpoints; other ad/domain blocking is
+# temporarily deferred to the general adblock and narrowly matched Rewrite.
+# If late chapters still fail, turn this subscription OFF and check other rules.
+#
+# Known Fanqie logging/monitoring hosts (NOT reading/content CDNs)
 host,log3-applog.fqnovel.com,reject
 host,log5-applog.fqnovel.com,reject
 host,rtlog3-applog.fqnovel.com,reject
@@ -12,18 +12,8 @@ host,rtlog5-applog.fqnovel.com,reject
 host,mon11-misc-lq.fqnovel.com,reject
 host,mon11-misc.fqnovel.com,reject
 host,mon3-misc.fqnovel.com,reject
-host-wildcard,log*-applog-*.fqnovel.com,reject
-host-wildcard,rtlog*-applog-*.fqnovel.com,reject
-host-wildcard,mon*-misc-lf.fqnovel.com,reject
-
-# Explicit ad/SDK media endpoints, NOT shared livestream media.
-host-wildcard,lf*-ad-union-sdk.pglstatp-toutiao.com,reject
-host-wildcard,p*-ad-sign.byteimg.com,reject
-host-wildcard,ads*-normal*.zijieapi.com,reject
-host,dig.bdurl.net,reject
-host,dig.zjurl.cn,reject
-
-# Let the QX rewrite intercept these (when general blocker does not already REJECT):
-# api-access.pangolin-sdk-toutiao.com; is.snssdk.com
-# Excluded deliberately: pull-*.douyincdn.com, p*-webcast-sign.douyinpic.com,
-# *.snssdk.com/video/*, generic fqnovelvod/fqnovelpic, all static IP-CIDRs.
+#
+# Disabled in V2.1 pending network-activity evidence:
+# all host-wildcard, ads*-normal*.zijieapi.com, p*-ad-sign.byteimg.com,
+# lf*-ad-union-sdk.pglstatp-toutiao.com, dig.bdurl.net/dig.zjurl.cn.
+# Shared Douyin livestream and Fanqie chapter/content delivery are never blocked.
