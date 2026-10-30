@@ -1,0 +1,5 @@
+# JX3 Unbounded / Jianwang 3 - Quantumult X login and update DIRECT V1.1
+# Converted from KeLee Loon plugin [General] real-ip targets.
+# Requires dns_exclusion_list in QX [general] separately; see JX3/README.md.
+host-suffix,xoyocdn.com,direct
+host,xg-flow.xoyo.com,direct
