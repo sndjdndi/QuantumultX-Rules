@@ -1,46 +1,62 @@
-# Bilibili Quantumult X unified rewrite V1.1 — 2026-11-11
+# Bilibili Quantumult X v2.0 — KeLee-style video ad filtering (2026-11-12)
 
-Only ONE QX remote rewrite subscription is needed:
+## Single subscription (no separate "enhancement" subscription)
+
+Use this **one** remote rewrite in Quantumult X:
 
 https://raw.githubusercontent.com/sndjdndi/QuantumultX-Rules/main/Bilibili/Bilibili.conf
 
-The companion JavaScript at `Bilibili/bilibili-json.js` is referenced automatically. The video-specific third-party Protobuf JavaScript is referenced automatically from a fixed GitHub commit (see below). **Do not separately subscribe to any JavaScript file.**
+The rewrite automatically invokes both:
+- `bilibili-json.js`: existing homepage, splash, PGC promotion and live-room ad processing.
+- `bilibili-proto.js`: **new independent Protobuf wire-format parser** for video under-player ads and recommendations.
 
-## Change from V1.0
+Do **not** manually import JS files. The previous `Bilibili-Proto-Optional.conf` file has already been removed.
 
-- Combined former Bilibili.conf and Bilibili-Proto-Optional.conf into one remote rewrite file.
-- Enabled the two previously commented, targeted video detail/player response rules:
-  - `https://app.bilibili.com/bilibili.app.viewunite.v1.View/View`
-  - `https://app.bilibili.com/bilibili.app.playerunite.v1.Player/PlayViewUnite`
-- These attempt to remove recognized under-player advertising/promotional modules; not guaranteed to remove every ad version.
-- Retained splash, recommended feeds, dynamic/popular/search, live room and narrow PGC advertising cleanup.
-- No comment (`Reply/MainList`, `DetailList`) or barrage (`DM/DmView`) endpoint is rewritten.
-- Kept the four known MITM hostnames, avoiding generic wildcards and grpc.biliapi.net interception by default.
-- The old optional enhancement file is retired. If the user already has BOTH old subscriptions in QX, DISABLE/DELETE the older enhancement subscription.
+## Why v1.1 could still show ads below videos
 
-## Install
+v1.1 only subscribed to `View/View` and `PlayViewUnite` on `app.bilibili.com`, while KeLee's publicly collected Loon plugin also handles legacy View, `RelatesFeed`, `AIRelateAsync`, and `grpc.biliapi.net` routes. Bilibili apps can fetch video-page commercial cards from related feeds instead of embedding them in the first detail response.
 
-In QX `[rewrite_remote]`:
+## v2.0 scope
 
-```ini
-https://raw.githubusercontent.com/sndjdndi/QuantumultX-Rules/main/Bilibili/Bilibili.conf, tag=B站去广告V1.1, update-interval=86400, opt-parser=false, enabled=true
-```
+The independent QX protobuf parser closely mirrors the **observable field-filtering approach** of the publicly collected kokoryh/KeLee Loon implementation:
 
-Before testing, disable other Bilibili rewrites such as Moyu BiliBiliAdsLite / BiliBiliAds and the former `Bilibili-Proto-Optional.conf`. Refresh QX remote rewrites. Ensure MITM is on, certificate installed/trusted, and cold restart Bilibili.
+- Legacy `app.view.v1.View/View`: clear commercial `cms`, `cm_config`, `cm_ipad`, `special_cell_new`, `label`, embedded `ReqUser.elec_plus_btn`, and commercial entries in `relates`.
+- `app.view.v1.View/RelatesFeed`: remove card entries with commercial marker `cm`.
+- `app.view.v1.View/ViewProgress`: remove promotional `video_guide`.
+- New `app.viewunite.v1.View/View`: clear `cm` and `ReqUser.elec_plus_btn`, remove recognized commercial/promotional module types 18, 29, 37, 55, 63, and clean module type 28's related commercial cards.
+- `app.viewunite.v1.View/RelatesFeed`: filter related cards of types 4, 5, 6, 7, 11; remove entries with commercial `cm_stock` or `basic_info.unique_id`.
+- `app.viewunite.v1.View/AIRelateAsync`: clear `cm` and filter commercial modules.
+- `app.playerunite.v1.Player/PlayViewUnite`: remove `view_info.prompt_bar`.
+- `pgc.gateway.player.v2.PlayURL/PlayView`: remove `view_info.try_watch_prompt_bar`.
 
-## Compatibility and limitations
+These cover both `app.bilibili.com` and `grpc.biliapi.net` URL patterns. The main QX rewrite includes only five precise MITM hostnames, **no wildcard Bilibili domains and no grpc host REJECT**.
 
-**Important**: QX may not successfully intercept all Bilibili HTTP/2 gRPC traffic. The upstream Zenmo QX author noted that processing video details could disrupt comments or barrage. This unified test version deliberately limits processing to exactly two video interfaces under `app.bilibili.com`; no full-domain `grpc.biliapi.net` REJECT. The JavaScript has been tested with synthetic gRPC frames and URL regex tests, but not yet verified on the user's phone. See QX network activity to confirm actual rule matches, and test video playback, details, comments, barrage and recommendations.
+Unrecognized binary/protobuf fields remain byte-for-byte untouched; corrupt/unsupported/oversize/compressed-without-utilities responses pass through without modification. **Reply/comment endpoints, barrage/danmaku endpoints, login, playback streams and media CDNs are not targeted.**
 
-If video detail or comments stop loading, disable Bilibili.conf temporarily. In the next repository revision, the two lines under `[8] NEW in v1.1` can be commented out without affecting the other rules. GitHub commit history also allows rollback to v1.0.
+## Important platform limitation
 
-If the small ad under a video remains, capture or screenshot the actual panel and the associated request path (without sharing cookies or tokens). Different placements, including the pause ad launched in 2026, may be delivered by different interfaces; appearance alone cannot prove the network origin.
+This is **not** a literal 1:1 clone of the Loon plugin, because:
+- KeLee/kokoryh's Loon scripts explicitly reject Quantumult X in their JavaScript runtime and use Loon-specific binary HTTP/2 APIs and request retry logic;
+- KeLee publicly noted that some Bilibili ads delivered over `grpc.biliapi.net` (HTTP/2) were not inspectable by Quantumult X's MITM implementation. QX behavior can change by version, so check actual QX traffic.
+- The website's protected plugin distribution cannot be treated as a reusable source code bundle. This repository's protobuf parser is independently implemented from publicly visible message field behavior and does not redistribute Loon's bundle.
 
-## Sources and attribution
+The presence of URL regexes for `grpc.biliapi.net` **does not guarantee** QX can decrypt those gRPC responses. Only an actual per-request rewrite hit proves execution.
 
-- [KeLee/kokoryh Loon Bilibili plugin](https://github.com/Moli-X/Tool/blob/X/Loon/Plugin/Kelee/Bilibili_remove_ads.plugin) for conceptual endpoint reference, not copied Loon binary script.
-- [ZenmoFeiShi/Qx](https://github.com/ZenmoFeiShi/Qx/blob/main/bili_view_ad_rewrite.snippet) for QX Protobuf video detail logic. Script pinned to [commit 5df3cafc4684](https://github.com/ZenmoFeiShi/Qx/tree/5df3cafc468419e7b58b0f4a1b75df0786ab1c67).
-- [app2smile/rules](https://github.com/app2smile/rules/blob/master/module/bilibili-qx.conf) for QX integration ideas.
-- [Quantumult X rewrite documentation](https://github.com/crossutility/Quantumult-X/blob/master/rewrite.md)
+## Install / test
 
-No third-party bundled scripts or user capture data have been copied into this repository.
+1. Disable all other Bilibili remote rewrites (Moyu full/Lite, older Bilibili copies) to avoid conflicts. Retain only this single Bilibili.conf.
+2. Refresh the remote rewrite subscription in QX, confirm the trusted MITM certificate, then fully terminate and reopen Bilibili.
+3. Test a normal video, its under-player ad, related video carousel, comments and playback. Also open several different videos because ad material may be served on different endpoints.
+4. In QX network activity, inspect matching paths (`View/View`, `RelatesFeed`, `AIRelateAsync`) and log messages starting `[BiliQX-Proto]`. Absence of script logs does not prove a server-side ad delivery request has been intercepted.
+5. If video details or comments break, temporarily turn OFF this Bilibili rewrite and restore the last known working GitHub commit. Use GitHub history to roll back.
+
+**Simulation tests passed**: View ad fields, legacy View, related feed, playback prompt, comment bypass, untouched unknown data, malformed input and unsupported compressed messages. This does not substitute for real-device testing.
+
+If the small under-video ad persists, a screenshot of the precise ad placement and QX's corresponding request path (never cookies/tokens/session values) is needed for diagnosis. Do not add generic domain rejections based solely on ad timing.
+
+## Sources/credits
+
+- [Publicly collected KeLee/kokoryh Loon plugin](https://github.com/Moli-X/Tool/blob/X/Loon/Plugin/Kelee/Bilibili_remove_ads.plugin)
+- [KeLee warning regarding QX HTTP/2 MITM](https://t.me/s/ibilibili/153)
+- [Public app2smile QX examples](https://github.com/app2smile/rules/blob/master/module/bilibili-qx.conf)
+- [ZenmoFeiShi QX protobuf work](https://github.com/ZenmoFeiShi/Qx/blob/main/bili_view_ad_rewrite.snippet)
